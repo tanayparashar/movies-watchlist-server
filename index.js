@@ -36,12 +36,13 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
+	//console.log(req.body);
 	const user = await User.findOne({
 		email: req.body.email,
 	})
-
+	console.log(user)
 	if (!user) {
-		return { status: 'error', error: 'Invalid login' }
+		return res.json({ status: 'error', error: 'Invalid login' });
 	}
 
 	const isPasswordValid = await bcrypt.compare(
@@ -71,7 +72,7 @@ app.get('/loginCheck', async (req, res) => {
 		const email = decoded.email;
 		const user = await User.findOne({ email: email});
 		console.log(user);
-		return res.json({ status: 'ok', quote: user.quote });
+		return res.json({ status: 'ok', message: "success signed-in" });
 	} catch (error) {
 		console.log(error)
 		res.json({ status: 'error', error: 'invalid token' });
@@ -122,6 +123,49 @@ app.put('/makepublic', async (req, res) => {
 		console.log(error)
 		res.json({ status: 'error', error: 'invalid token' })
 	}
+});
+app.put('/makeprivate', async (req, res) => {
+	const token = req.headers['x-access-token'];
+	try {
+		const decoded = jwt.verify(token, jwtSecretKey)
+		const email = decoded.email
+		await User.updateOne(
+			{ email: email },
+			{ public: false}
+		)
+		return res.json({status:"success",message:"made private"})
+	} catch (error) {
+		console.log(error)
+		res.json({ status: 'error', error: 'invalid token' })
+	}
+});
+app.get('/watchlist/:email', async function(req, res) {
+    // Retrieve the tag from our URL path
+	try{
+    var email = req.params.email;
+	const token = req.headers['x-access-token'];
+    let user = await User.findOne({email: email}).exec();
+	if(user.public)
+	{
+		res.json(user.movies);
+	}
+	else
+	{
+		const decoded = jwt.verify(token, jwtSecretKey);
+		const useremail = decoded.email;
+		if(useremail==email)
+		{
+			res.json(user.movies);
+		}
+		else
+		{
+			res.send({message:"private watchlist please login with correct ID"})
+		}
+	}
+}
+catch{
+	res.json({status:"error",message:"internal error"});
+}
 });
 app.get('/',async(req,res)=>{
     res.send('Can GET')
