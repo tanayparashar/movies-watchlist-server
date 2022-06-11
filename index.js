@@ -17,7 +17,6 @@ const jwtSecretKey="fuhehfuiRW@j@$)if$q4%nFGEWw7489f4*$q8758h##q$b48U$*";
 mongoose.connect(`mongodb+srv://adminTanay:${mongopass}@cluster0.9xyhg.mongodb.net/?retryWrites=true&w=majority`);
 
 app.post('/register', async (req, res) => {
-	console.log(req.body);
 	try {
 		const hashedPass = await bcrypt.hash(req.body.password, 10);
 		await User.create({
@@ -27,7 +26,6 @@ app.post('/register', async (req, res) => {
 		})
 		res.json({ status: 'ok',message:"User successFully created" })
 	} catch (err) {
-		console.log(JSON.stringify(err));
 		if(err.code===11000)
 			res.json({ status: 'error', message: 'Email already exists' });
 		else
@@ -36,11 +34,9 @@ app.post('/register', async (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-	//console.log(req.body);
 	const user = await User.findOne({
 		email: req.body.email,
 	})
-	console.log(user)
 	if (!user) {
 		return res.json({ status: 'error', error: 'Invalid login' });
 	}
@@ -71,15 +67,12 @@ app.get('/loginCheck', async (req, res) => {
 		const decoded = jwt.verify(token, jwtSecretKey);
 		const email = decoded.email;
 		const user = await User.findOne({ email: email});
-		console.log(user);
 		return res.json({ status: 'ok', message: "success signed-in" });
 	} catch (error) {
-		console.log(error)
 		res.json({ status: 'error', error: 'invalid token' });
 	}
 });
 app.put('/addToWatchlist', async (req, res) => {
-	console.log(req.body);
 	const token = req.headers['x-access-token'];
 	try {
 		const decoded = jwt.verify(token, jwtSecretKey)
@@ -91,7 +84,6 @@ app.put('/addToWatchlist', async (req, res) => {
 
 		return res.json({ status: 'ok' })
 	} catch (error) {
-		console.log(error)
 		res.json({ status: 'error', error: 'invalid token' })
 	}
 });
@@ -100,12 +92,10 @@ app.get('/watchlist', async (req, res) => {
 	try {
 		const decoded = jwt.verify(token, jwtSecretKey);
 		const email = decoded.email;
-		console.log(email);
 		User.findOne({ email: email }).exec()
 		.then(docs=>res.json({status:"success",data:docs.movies}))
 		.catch(err=>res.json({ status: 'error', error: err }))
     } catch (error) {
-		console.log(error)
 		res.json({ status: 'error', error: 'invalid token' })
 	}
 });
@@ -120,7 +110,6 @@ app.put('/makepublic', async (req, res) => {
 		)
 		return res.json({status:"success",message:"made public"})
 	} catch (error) {
-		console.log(error)
 		res.json({ status: 'error', error: 'invalid token' })
 	}
 });
@@ -135,7 +124,6 @@ app.put('/makeprivate', async (req, res) => {
 		)
 		return res.json({status:"success",message:"made private"})
 	} catch (error) {
-		console.log(error)
 		res.json({ status: 'error', error: 'invalid token' })
 	}
 });
