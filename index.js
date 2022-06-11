@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const cors= require('cors');
 const User=require("./model/user");
+const { status } = require('express/lib/response');
 
 const app=express();
 app.use(cors());
@@ -76,7 +77,52 @@ app.get('/loginCheck', async (req, res) => {
 		res.json({ status: 'error', error: 'invalid token' });
 	}
 });
+app.put('/addToWatchlist', async (req, res) => {
+	console.log(req.body);
+	const token = req.headers['x-access-token'];
+	try {
+		const decoded = jwt.verify(token, jwtSecretKey)
+		const email = decoded.email
+		await User.updateOne(
+			{ email: email },
+			{ $push: { movies : req.body.imdbID } }
+		)
 
+		return res.json({ status: 'ok' })
+	} catch (error) {
+		console.log(error)
+		res.json({ status: 'error', error: 'invalid token' })
+	}
+});
+app.get('/watchlist', async (req, res) => {
+	const token = req.headers['x-access-token'];
+	try {
+		const decoded = jwt.verify(token, jwtSecretKey);
+		const email = decoded.email;
+		console.log(email);
+		User.findOne({ email: email }).exec()
+		.then(docs=>res.json({status:"success",data:docs.movies}))
+		.catch(err=>res.json({ status: 'error', error: err }))
+    } catch (error) {
+		console.log(error)
+		res.json({ status: 'error', error: 'invalid token' })
+	}
+});
+app.put('/makepublic', async (req, res) => {
+	const token = req.headers['x-access-token'];
+	try {
+		const decoded = jwt.verify(token, jwtSecretKey)
+		const email = decoded.email
+		await User.updateOne(
+			{ email: email },
+			{ public: true}
+		)
+		return res.json({status:"success",message:"made public"})
+	} catch (error) {
+		console.log(error)
+		res.json({ status: 'error', error: 'invalid token' })
+	}
+});
 app.get('/',async(req,res)=>{
     res.send('Can GET')
 })
