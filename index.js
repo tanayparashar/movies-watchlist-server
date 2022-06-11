@@ -11,8 +11,10 @@ app.use(cors());
 app.use(express.json());
 
 
-const mongopass="HelloWorld";
-const jwtSecretKey="fuhehfuiRW@j@$)if$q4%nFGEWw7489f4*$q8758h##q$b48U$*";
+var port = process.env.PORT || 80
+
+const mongopass=process.env.mongopass ;
+const jwtSecretKey=process.env.jwtSecretKey;
 
 mongoose.connect(`mongodb+srv://adminTanay:${mongopass}@cluster0.9xyhg.mongodb.net/?retryWrites=true&w=majority`);
 
@@ -170,6 +172,6 @@ catch{
 app.get('/',async(req,res)=>{
     res.send('Can GET')
 })
-app.listen(3001,()=>{
+app.listen(port,()=>{
     console.log("Listening on port 3001");
 })
